@@ -1,0 +1,10 @@
+{
+    "name": "hp/i-task",
+    "description": "task",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "firebase/php-jwt": "^6.11",
+        "vlucas/phpdotenv": "^5.6"
+    }
+}

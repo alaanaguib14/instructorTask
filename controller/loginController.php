@@ -68,7 +68,7 @@ function login($user){
     );
     $expiresAt = date("Y-m-d H:i:s", strtotime("+14 days"));
     $insertRefreshToken = " INSERT INTO `refresh_tokens` (user_id,token,expires_at)
-                            VALUES ('{$userData['id']}','$$refreshToken','$expiresAt')";
+                            VALUES ('{$userData['id']}','$refreshToken','$expiresAt')";
     mysqli_query($connect,$insertRefreshToken);
     http_response_code(200);
     echo json_encode([

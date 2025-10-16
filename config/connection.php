@@ -10,5 +10,6 @@ $password = $_ENV['DB_PASS'];
 $db = $_ENV['DB_NAME'];
 
 $connect = mysqli_connect($host,$user,$password,$db);
+date_default_timezone_set('Africa/Cairo');
 
 ?>

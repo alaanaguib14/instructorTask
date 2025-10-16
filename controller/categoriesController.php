@@ -174,4 +174,41 @@ function deleteCategory($id,$userRole){
         ]);
     }
 }
+// restore deleted category
+function restoreCategory($id,$userRole){
+    global $connect;
+    header("Content-Type: application/json");
+
+    // category exists?
+    $getQuery = "SELECT * FROM `category` WHERE `cat_id` = '$id' AND `is_deleted` = 1";
+    $getResult = mysqli_query($connect,$getQuery);
+    if (mysqli_num_rows($getResult) === 0) {
+        http_response_code(404);
+        echo json_encode([
+            "success" => false,
+            "message" => "Category not found or not deleted"
+        ]);
+        return;
+    }
+
+    // restore
+    $restoreQuery = "UPDATE `category` SET `is_deleted` = 0 WHERE `cat_id` = '$id'";
+    $restoreResult = mysqli_query($connect,$restoreQuery);
+    if ($restoreResult) {
+        http_response_code(200);
+        echo json_encode([
+            "success" => true,
+            "message" => "Category restored successfully",
+            "data" => [
+                "category_id" => $id
+            ]
+        ]);
+    } else {
+        http_response_code(500);
+        echo json_encode([
+            "success" => false,
+            "message" => "Failed to restore category, Try again later"
+        ]);
+    }
+}
 ?>

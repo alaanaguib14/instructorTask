@@ -49,6 +49,20 @@ elseif ($method == 'DELETE')
     $id = (int)$_GET['id'];
     deleteCategory($id, $user);
 }
+elseif($method == 'PATCH' && isset($_GET['action']) && $_GET['action'] === 'restore')
+{
+    authorize($user,'admin');
+    if (!isset($_GET['id'])) {
+        http_response_code(400);
+        echo json_encode([
+            "success" => false,
+            "message" => "Category ID is required"
+        ]);
+        exit;
+    }
+    $id = (int)$_GET['id'];
+    restoreCategory($id, $user);
+}
 else
 {
     http_response_code(405);

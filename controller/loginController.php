@@ -46,7 +46,7 @@ function login($user){
         return;
     }
     // jwt generation
-    $token = JWT::encode(
+    $accessToken = JWT::encode(
     [
         'createdAt' => time(),
         'expiresAt' => time() + 1800, // 30 minutes
@@ -58,12 +58,25 @@ function login($user){
     $_ENV['JWT_SECRET'],
     'HS512');
 
+    $refreshToken = JWT::encode(
+        [
+            'userId' => $userData['id'],
+            'expiresAt' => time() + (14*24*60*60) 
+        ],
+        $_ENV['JWT_REFRESH_SECRET'],
+        'HS512'
+    );
+    $expiresAt = date("Y-m-d H:i:s", strtotime("+14 days"));
+    $insertRefreshToken = " INSERT INTO `refresh_tokens` (user_id,token,expires_at)
+                            VALUES ('{$userData['id']}','$$refreshToken','$expiresAt')";
+    mysqli_query($connect,$insertRefreshToken);
     http_response_code(200);
     echo json_encode([
         "success" => true,
         "message" => "Login successful",
-        "token" => $token,
         "data" => [
+            "token" => $accessToken,
+            "refresh_token" => $refreshToken,
             "id" => $userData['id'],
             "name" => $userData['name'],
             "email" => $userData['email'],

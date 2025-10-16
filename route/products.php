@@ -65,6 +65,20 @@ elseif ($method == 'DELETE')
     $id = (int)$_GET['id'];
     deleteProduct($id, $user);
 }
+elseif($method == 'PATCH' && isset($_GET['action']) && $_GET['action'] === 'restore')
+{
+    authorize($user,'admin');
+    if (!isset($_GET['id'])) {
+        http_response_code(400);
+        echo json_encode([
+            "success" => false,
+            "message" => "Product ID is required"
+        ]);
+        exit;
+    }
+    $id = (int)$_GET['id'];
+    restoreProduct($id, $user);
+}
 else
 {
     http_response_code(405);

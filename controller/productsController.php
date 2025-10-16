@@ -42,12 +42,33 @@ function addProduct($data, $userRole){
         ]);
         return;
     }
+    //validate image type and size 
+    if ($pImage) {
+        $imageData = base64_decode($pImage, true);
+        if ($imageData === false) {
+            http_response_code(400);
+            echo json_encode([
+                "success" => false,
+                "message" => "Invalid image format"
+            ]);
+            return;
+        }
+        if (strlen($imageData) > 10 * 1024 * 1024) { // 10MB limit
+            http_response_code(400);
+            echo json_encode([
+                "success" => false,
+                "message" => "Image size exceeds 10MB limit"
+            ]);
+            return;
+        }
+    }
 
     // store the image in uploads dir
+
     if ($pImage) {
         $imageData = base64_decode($pImage);
-        $imageName = 'product_' . time() . '.png';
-        $imagePath = __DIR__ . '/../uploads/' . $imageName;
+        $imageName = 'product-' . time() . '.png';
+        $imagePath = '../uploads/' . $imageName;
         if (file_put_contents($imagePath, $imageData) === false) {
             http_response_code(500);
             echo json_encode([
@@ -56,9 +77,9 @@ function addProduct($data, $userRole){
             ]);
             return;
         }
-        $pImage = 'uploads/' . $imageName; // store relative path in DB
+        $pImage = 'uploads/' . $imageName; 
     } else {
-        $pImage = null; // or set a default image path if needed
+        $pImage = null;
     }
 
     // insert product
@@ -349,6 +370,44 @@ function deleteProduct($id,$userRole){
         echo json_encode([
             "success" => false,
             "message" => "Failed to delete product, Try again later"
+        ]);
+    }
+}
+
+// restore soft deleted product by action
+function restoreProduct($id,$userRole){
+    global $connect;
+    header("Content-Type: application/json");
+
+    // product exists and is deleted
+    $getQuery = "SELECT * FROM `products` WHERE `product_id` = '$id' AND `is_deleted` = 1";
+    $getResult = mysqli_query($connect, $getQuery);
+    if (mysqli_num_rows($getResult) === 0) {
+        http_response_code(404);
+        echo json_encode([
+            "success" => false,
+            "message" => "Product not found or not deleted"
+        ]);
+        return;
+    }
+    
+    // restore
+    $restoreQuery = "UPDATE `products` SET `is_deleted` = 0 WHERE `product_id` = '$id' AND `is_deleted` = 1";
+    $restoreResult = mysqli_query($connect, $restoreQuery);
+    if ($restoreResult) {
+        http_response_code(200);
+        echo json_encode([
+            "success" => true,
+            "message" => "Product restored successfully",
+            "data" => [
+                "product_id" => $id
+            ]
+        ]);
+    } else {
+        http_response_code(500);
+        echo json_encode([
+            "success" => false,
+            "message" => "Failed to restore product, Try again later"
         ]);
     }
 }
